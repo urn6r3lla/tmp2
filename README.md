@@ -19,7 +19,8 @@
 **Выполнение:**  
 В настройках VirtualBox добавлены три диска `sdb`, `sdc`, `sdd` по 5 ГБ.  
 
-**Скриншот:** окно настроек ВМ со списком дисков → `screenshots/01_vm_disks.png`
+!['Что'](./screenshots/6.png)
+!['Что'](./screenshots/11.png)
 
 ---
 
@@ -32,7 +33,11 @@
 - В `/etc/ssh/sshd_config` отключена парольная аутентификация: `PasswordAuthentication no`.  
 - Выполнен вход по SSH без пароля.  
 
-**Скриншот:** успешный вход по SSH (приглашение без запроса пароля) → `screenshots/02_ssh_login.png`
+**Скриншот:** успешный вход по SSH (приглашение без запроса пароля)
+
+!['Что'](./screenshots/1.png)
+!['Что'](./screenshots/2.png)
+
 
 ---
 
@@ -62,8 +67,8 @@ network:
 - `ip r` → маршрут по умолчанию через 192.168.1.1  
 
 **Скриншоты:**  
-- `screenshots/03_ip_a.png`  
-- `screenshots/04_ip_r.png`
+- !['Что'](./screenshots/4.png)
+- !['Что'](./screenshots/5.png)
 
 ---
 
@@ -73,7 +78,8 @@ network:
 **Выполнение:**  
 `lsblk` и `sudo fdisk -l` показали диски: `sda` (системный), `sdb`, `sdc`, `sdd` без разделов – готовы для RAID.  
 
-**Скриншот:** `screenshots/05_lsblk.png`
+**Скриншот:**
+- !['Что'](./screenshots/6.png)
 
 ---
 
@@ -90,8 +96,8 @@ sudo mdadm --create /dev/md0 --level=5 --raid-devices=3 /dev/sdb /dev/sdc /dev/s
 **Результат:** массив `/dev/md0` уровня 5 из трёх дисков.  
 
 **Скриншоты:**  
-- `screenshots/06_mdstat.png`  
-- `screenshots/07_mdadm_detail.png`
+![alt text](image.png)
+![- `screenshots/07_mdadm_detail.png`](screenshots/8.png)
 
 ---
 
@@ -102,19 +108,20 @@ LVM (Logical Volume Manager) позволяет гибко управлять д
 **Выполнение:**  
 ```bash
 sudo pvcreate /dev/md0                         # физический том
-sudo vgcreate ivanov /dev/md0                 # группа томов (по фамилии)
-sudo lvcreate -n lv0 -l 100%FREE ivanov       # логический том
-sudo mkfs.ext4 /dev/ivanov/lv0                # форматирование
+sudo vgcreate frolkin /dev/md0                 # группа томов (по фамилии)
+sudo lvcreate -n lv0 -l 100%FREE frolkin       # логический том
+sudo mkfs.ext4 /dev/frolkin/lv0                # форматирование
 sudo mkdir -p /raid/0
-sudo mount /dev/ivanov/lv0 /raid/0
+sudo mount /dev/frolkin/lv0 /raid/0
 ```
 Добавлена строка в `/etc/fstab` для автоматического монтирования.  
 
 **Проверка:** `df -h` → том размером ~10 ГБ смонтирован в `/raid/0`.  
 
 **Скриншоты:**  
-- `screenshots/08_pvs_vgs_lvs.png`  
-- `screenshots/09_df_fstab.png`
+![- `screenshots/08_pvs_vgs_lvs.png`  ](screenshots/9.png)
+![- `screenshots/09_df_fstab.png`](screenshots/10.png)
+![alt text](screenshots/11.png)
 
 ---
 
@@ -125,15 +132,13 @@ sudo mount /dev/ivanov/lv0 /raid/0
 - В VirtualBox добавлен 4-й диск `/dev/sde` (5 ГБ).  
 - Диск добавлен в RAID: `sudo mdadm --add /dev/md0 /dev/sde` и выполнен рост числа устройств: `sudo mdadm --grow /dev/md0 --raid-devices=4`.  
 - Перестройка отслеживалась через `cat /proc/mdstat`.  
-- Расширен PV: `sudo pvresize /dev/md0`, затем LV: `sudo lvextend -l +100%FREE /dev/ivanov/lv0` и файловая система: `sudo resize2fs /dev/ivanov/lv0`.  
+- Расширен PV: `sudo pvresize /dev/md0`, затем LV: `sudo lvextend -l +100%FREE /dev/frolkin/lv0` и файловая система: `sudo resize2fs /dev/frolkin/lv0`.  
 
 **Результат:** размер `/raid/0` увеличился с 10 ГБ до ~15 ГБ.  
 
 **Скриншоты:**  
-- `screenshots/10_df_before.png` (до)  
-- `screenshots/11_df_after.png` (после)  
-- `screenshots/12_lvs_after.png`  
-- `screenshots/13_mdadm_4disks.png`
+![alt text](screenshots/12.png)
+![alt text](screenshots/13.png)
 
 ---
 
@@ -150,8 +155,9 @@ NFS (Network File System) – протокол для удалённого до�
 **Проверка:** `showmount -e localhost` показал экспорт. Монтирование с localhost успешно.  
 
 **Скриншоты:**  
-- `screenshots/14_exports.png`  
-- `screenshots/15_showmount.png`
+![alt text](screenshots/14.png)
+![alt text](screenshots/15.png)
+![alt text](screenshots/16.png)
 
 ---
 
@@ -171,8 +177,9 @@ Cron – планировщик задач, выполняющий команд�
 **Результат:** каждые 2 минуты создаются архивы домашнего каталога в `/raid/0/backup/`.  
 
 **Скриншоты:**  
-- `screenshots/16_crontab.png`  
-- `screenshots/17_backup_files.png`
+![- `screenshots/16_crontab.png`  ](screenshots/17.png)
+![- `screenshots/17_backup_files.png`](screenshots/18.png)
+![alt text](screenshots/19.png)
 
 ---
 
@@ -193,8 +200,12 @@ sudo iptables -A INPUT -p icmp -j DROP
 Правила удалены командами `-D`.  
 
 **Скриншоты:**  
-- `screenshots/18_iptables_add.png`  
-- `screenshots/19_iptables_delete.png`
+![alt text](image-2.png)
+![- `screenshots/19_iptables_delete.png`](screenshots/22.png)
+![alt text](screenshots/21.png)
+![alt text](screenshots/23.png)
+![alt text](screenshots/24.png)
+![alt text](screenshots/27.png)
 
 ### 13. UFW с правилами блокировки  
 **Что такое UFW?**  
@@ -211,7 +222,9 @@ sudo ufw deny proto icmp
 Для сохранения SSH-доступа предварительно добавлено разрешение для своего IP.  
 После скриншота правила удалены.  
 
-**Скриншот:** `screenshots/20_ufw_status.png`
+**Скриншот:**
+![alt text](screenshots/25.png)
+![alt text](screenshots/27.png)
 
 ### 14. ss и nc  
 **Цель:** просмотр открытых портов и проверка доступности портов.  
@@ -221,7 +234,9 @@ sudo ufw deny proto icmp
 ss -tuln         # все слушающие порты
 nc -zv localhost 22
 ```
-**Скриншот:** `screenshots/21_ss_nc.png`
+**Скриншот:**
+![alt text](screenshots/26.png)
+
 
 ### 15. tcpdump  
 **Цель:** захват и анализ трафика.  
@@ -231,7 +246,10 @@ nc -zv localhost 22
 sudo tcpdump -i enp0s3 icmp -c 5      # перехват ICMP-пакетов
 sudo tcpdump -i enp0s3 -w capture.pcap -c 20
 ```
-**Скриншот:** `screenshots/22_tcpdump.png`
+**Скриншот:**
+![alt text](screenshots/28.png)
+![alt text](screenshots/29.png)
+![alt text](screenshots/27.png)
 
 ### 16. iptraf-ng  
 **Цель:** мониторинг трафика в реальном времени.  
@@ -239,7 +257,8 @@ sudo tcpdump -i enp0s3 -w capture.pcap -c 20
 **Выполнение:**  
 `sudo iptraf-ng` → выбран пункт "IP traffic monitor".  
 
-**Скриншот:** `screenshots/23_iptraf-ng.png`
+**Скриншот:**
+![alt text](screenshots/30.png)
 
 ### 17. Дополнительный сетевой интерфейс 172.23.0.7/24  
 **Выполнение:**  
@@ -247,7 +266,9 @@ sudo tcpdump -i enp0s3 -w capture.pcap -c 20
 
 **Результат:** `ip a` показывает `enp0s8` с адресом 172.23.0.7.  
 
-**Скриншот:** `screenshots/24_ip_172.png`
+**Скриншот:**
+![alt text](screenshots/31.png)
+![alt text](screenshots/32.png)
 
 ### 18. Открытие портов 139 и 445 в ufw, проверка nc  
 **Выполнение:**  
@@ -259,7 +280,8 @@ nc -zv 172.23.0.7 445
 ```
 Порты открыты, nc показывает "Connection refused" (сервисы не запущены).  
 
-**Скриншот:** `screenshots/25_ufw_139_445_nc.png`
+**Скриншот:**
+![alt text](screenshots/33.png)
 
 ### 19. OpenVPN (сервер 10.8.0.1/24, клиентский конфиг)  
 **Что такое OpenVPN?**  
@@ -275,10 +297,17 @@ nc -zv 172.23.0.7 445
 - Клиент запущен в той же ВМ – соединение установлено, появился интерфейс `tun1` с адресом 10.8.0.2, пинг до 10.8.0.1 проходит.  
 
 **Скриншоты:**  
-- `screenshots/26_openvpn_server_tun0.png`  
-- `screenshots/27_client_ovpn.png`  
-- `screenshots/28_openvpn_client_connected.png`  
-- `screenshots/29_ping_vpn.png`
+![alt text](screenshots/34.png)
+![alt text](screenshots/35.png)
+![alt text](screenshots/36.png)
+![alt text](screenshots/37.png)
+![alt text](screenshots/38.png)
+![alt text](screenshots/39.png)
+![alt text](screenshots/40.png)
+![alt text](screenshots/41.png)
+![alt text](screenshots/42.png)
+![alt text](screenshots/43.png)
+
 
 ### 20. Samba (общая папка, доступ по 172.23.0.7)  
 **Что такое Samba?**  
@@ -294,9 +323,9 @@ sudo mkdir -p /raid/0/samba && sudo chmod 777 /raid/0/samba
 Проверка: `smbclient //172.23.0.7/myshare -N` – вход выполнен, создан тестовый файл.  
 
 **Скриншоты:**  
-- `screenshots/30_samba_conf.png`  
-- `screenshots/31_smbclient.png`  
-- `screenshots/32_samba_testfile.png`
+![alt text](screenshots/44.png)
+![alt text](screenshots/45.png)
+![alt text](screenshots/46.png)
 
 ### 21. Проброс портов 139, 445 из сети 172.23.0.0/24 в VPN-сеть 10.8.0.0/24  
 **Цель:** перенаправление SMB-трафика в VPN.  
@@ -312,8 +341,9 @@ sudo iptables -A FORWARD -i enp0s8 -o tun0 -p tcp --dport 445 -j ACCEPT
 
 **Проверка:** правила видны в `iptables -t nat -L -n` и `iptables -L -n`.  
 
-**Скриншот:** `screenshots/33_iptables_dnat.png`
-
+**Скриншот:**
+![alt text](screenshots/47.png)
+![alt text](screenshots/48.png)
 ---
 
 ## 12. Выводы  
